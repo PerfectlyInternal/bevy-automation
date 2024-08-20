@@ -5,5 +5,9 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.14.1"
-bevy_common_assets = "0.11.0"
 bevy_pancam = "0.13.0"
+serde = "1.0.208"
+
+[dependencies.bevy_common_assets]
+version = "0.11"
+features = ["ron"]
