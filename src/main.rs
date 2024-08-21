@@ -12,6 +12,5 @@ fn main() {
             asset::AssetPlugin,
         ))
         .init_state::<state::AppState>()
-
         .run();
 }

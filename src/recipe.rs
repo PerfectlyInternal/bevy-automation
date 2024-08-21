@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub struct Recipe {
     pub name: String,
     pub id: u16,
+    pub duration: f32,
     pub inputs: HashMap<u16, u16>,
     pub outputs: HashMap<u16, u16>
 }
