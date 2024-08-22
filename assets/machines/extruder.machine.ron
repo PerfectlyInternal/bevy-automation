@@ -1,0 +1,6 @@
+(
+    name: "Extruder",
+    id: 1,
+    crafting_speed: 1.0,
+    valid_recipes: [1]
+)
