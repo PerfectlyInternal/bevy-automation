@@ -31,7 +31,7 @@ impl Recipe {
         for (type_id, amount) in template.inputs.iter() {
             inputs.push(
                 ItemStack {
-                    item_type: item_types.0.get(&type_id).unwrap().clone(),
+                    item_type: item_types.0.get(type_id).unwrap().clone(),
                     size: *amount
                 }
             );
@@ -39,7 +39,7 @@ impl Recipe {
         for (type_id, amount) in template.outputs.iter() {
             outputs.push(
                 ItemStack {
-                    item_type: item_types.0.get(&type_id).unwrap().clone(),
+                    item_type: item_types.0.get(type_id).unwrap().clone(),
                     size: *amount
                 }
             );

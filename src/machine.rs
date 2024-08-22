@@ -91,7 +91,7 @@ fn spawn_inputs(
     item_types: Res<ItemTypeList>,
 ) {
     for mut inv in q.iter_mut() {
-        let rem = inv.0.add(&vec![
+        let rem = inv.0.add(&[
             ItemStack { item_type: item_types.0.get(&1).unwrap().clone(), size: 10 }
         ]);
         if !rem.is_empty() {
@@ -133,13 +133,11 @@ fn update_crafting_state(
     mut q: Query<(&SetRecipe, &mut MachineState, &mut CraftingTimer), With<Machine>>
 ) {
     for (recipe, mut state, mut timer) in q.iter_mut() {
-        if let Some(_) = recipe.0 {
-            if *state == MachineState::Crafting {
-                timer.0.tick(time.delta());
-                if timer.0.finished() {
-                    *state = MachineState::Complete;
-                    println!("Finished crafting {}!", recipe.0.as_ref().unwrap().name);
-                }
+        if recipe.0.is_some() && *state == MachineState::Crafting {
+            timer.0.tick(time.delta());
+            if timer.0.finished() {
+                *state = MachineState::Complete;
+                println!("Finished crafting {}!", recipe.0.as_ref().unwrap().name);
             }
         }
     }

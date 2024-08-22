@@ -20,7 +20,7 @@ impl Default for Inventory {
 }
 
 impl Inventory {
-    pub fn contains(&self, stacks: &Vec<ItemStack>) -> bool {
+    pub fn contains(&self, stacks: &[ItemStack]) -> bool {
         for stack in stacks.iter() {
             let mut cont = true;
             for s in self.stacks.iter() {
@@ -36,7 +36,7 @@ impl Inventory {
         true
     }
 
-    pub fn remove(&mut self, stacks: &Vec<ItemStack>) -> bool {
+    pub fn remove(&mut self, stacks: &[ItemStack]) -> bool {
         if !self.contains(stacks) {
             return false;
         }
@@ -67,7 +67,7 @@ impl Inventory {
         used_slots
     }
 
-    pub fn can_fit(&self, stacks: &Vec<ItemStack>) -> bool {
+    pub fn can_fit(&self, stacks: &[ItemStack]) -> bool {
         let mut needed_slots: u16 = 0;
         for stack in stacks.iter() {
             let mut has_type = false;
@@ -84,9 +84,9 @@ impl Inventory {
         needed_slots <= self.slots
     }
 
-    pub fn add(&mut self, stacks: &Vec<ItemStack>) -> Vec<ItemStack> {
+    pub fn add(&mut self, stacks: &[ItemStack]) -> Vec<ItemStack> {
         let mut free_slots = self.slots - self.used_full_slots();
-        let mut to_add = stacks.clone();
+        let mut to_add = stacks.to_owned();
         for a in to_add.iter_mut() {
             let item_type = a.item_type.clone();
             let mut has_type = false;
@@ -129,7 +129,7 @@ impl Inventory {
         to_add
     }
 
-    pub fn add_strict(&mut self, stacks: &Vec<ItemStack>) -> bool {
+    pub fn add_strict(&mut self, stacks: &[ItemStack]) -> bool {
         if self.can_fit(stacks) {
             let remainder = self.add(stacks);
             if !remainder.is_empty() {

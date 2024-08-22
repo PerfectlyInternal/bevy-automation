@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-#[derive(serde::Deserialize, Asset, TypePath, Clone, Hash)]
+#[derive(serde::Deserialize, Asset, TypePath, Clone)]
 pub struct ItemType {
     pub name: String,
     pub id: u16,
@@ -57,7 +57,7 @@ impl Sub for ItemStack {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        if !(self >= rhs) {
+        if self.partial_cmp(&rhs).is_none() {
             panic!("Cannot subtract item stacks with different types, or with a negative size result!");
         }
         Self {
