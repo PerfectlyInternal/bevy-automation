@@ -61,7 +61,7 @@ pub struct MachineBundle {
     input: InputInventory,
     output: OutputInventory,
     recipe: SetRecipe,
-    crafting_state: MachineState,
+    state: MachineState,
     crafting_timer: CraftingTimer,
 }
 
