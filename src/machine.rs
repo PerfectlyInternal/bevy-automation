@@ -37,12 +37,18 @@ pub struct Machine(pub MachineTemplate);
 #[derive(Component, Default)]
 pub struct SetRecipe(pub Option<Recipe>);
 
-#[derive(Component, Default)]
-pub struct CraftingState {
-    pub crafting: bool, // is currently crafting?
-    pub complete: bool, // do we need to spawn outputs?
-    pub timer: Timer,
+#[derive(Component, Default, PartialEq, Eq)]
+pub enum MachineState {
+    #[default]
+    Idle,
+    Crafting,
+    Complete,
+    InputShortage,
+    OutputFull,
 }
+
+#[derive(Component, Default)]
+pub struct CraftingTimer(Timer);
 
 #[derive(Component, Default)]
 pub struct InputInventory(pub Inventory);
@@ -55,7 +61,8 @@ pub struct MachineBundle {
     input: InputInventory,
     output: OutputInventory,
     recipe: SetRecipe,
-    crafting_state: CraftingState,
+    crafting_state: MachineState,
+    crafting_timer: CraftingTimer,
 }
 
 fn spawn_machine(
@@ -96,25 +103,26 @@ fn spawn_inputs(
 }
 
 fn start_crafts(
-    mut q: Query<(&Machine, &SetRecipe, &mut CraftingState, &mut InputInventory)>
+    mut q: Query<(&Machine, &SetRecipe, &mut MachineState, &mut CraftingTimer, &mut InputInventory)>,
 ) {
-    for (machine, recipe_opt, mut state, mut inv) in q.iter_mut() {
+    for (machine, recipe_opt, mut state, mut timer, mut inv) in q.iter_mut() {
         if let Some(recipe) = &recipe_opt.0 {
-            if state.complete { 
-                println!("Machine already has completed outputs, not starting recipe");
-                continue;
-            }
-            if state.crafting {
-                println!("Machine is already crafting");
-                continue;
-            }
-            println!("Input contains {}", inv.0.stacks[0]);
-            if inv.0.remove(&recipe.inputs) {
-                state.timer = Timer::from_seconds(recipe.duration / machine.0.crafting_speed, TimerMode::Once);
-                state.crafting = true;
-                println!("Started crafting {}!", recipe.name);
-            } else {
-                println!("Couldn't get items for {}", recipe.name);
+            match *state { 
+                MachineState::Complete => println!("Machine already has completed outputs, not starting recipe"),
+                MachineState::Crafting => println!("Machine is already crafting!"),
+                MachineState::InputShortage => println!("Machine has no inputs!"),
+                MachineState::OutputFull => println!("Machine's output is full!"),
+                MachineState::Idle => {
+                    println!("Input contains {}", inv.0.stacks[0]);
+                    if inv.0.remove(&recipe.inputs) {
+                        timer.0 = Timer::from_seconds(recipe.duration / machine.0.crafting_speed, TimerMode::Once);
+                        *state = MachineState::Crafting;
+                        println!("Started crafting {}!", recipe.name);
+                    } else {
+                        *state = MachineState::InputShortage;
+                        println!("Couldn't get items for {}", recipe.name);
+                    }
+                }
             }
         }
     }
@@ -122,15 +130,14 @@ fn start_crafts(
 
 fn update_crafting_state(
     time: Res<Time>,
-    mut q: Query<(&SetRecipe, &mut CraftingState), With<Machine>>
+    mut q: Query<(&SetRecipe, &mut MachineState, &mut CraftingTimer), With<Machine>>
 ) {
-    for (recipe, mut state) in q.iter_mut() {
+    for (recipe, mut state, mut timer) in q.iter_mut() {
         if let Some(_) = recipe.0 {
-            if state.crafting {
-                state.timer.tick(time.delta());
-                if state.timer.finished() {
-                    state.crafting = false;
-                    state.complete = true;
+            if *state == MachineState::Crafting {
+                timer.0.tick(time.delta());
+                if timer.0.finished() {
+                    *state = MachineState::Complete;
                     println!("Finished crafting {}!", recipe.0.as_ref().unwrap().name);
                 }
             }
@@ -139,15 +146,18 @@ fn update_crafting_state(
 }
 
 fn spawn_craft_outputs(
-    mut q: Query<(&SetRecipe, &mut CraftingState, &mut OutputInventory), With<Machine>>
+    mut q: Query<(&SetRecipe, &mut MachineState, &mut OutputInventory), With<Machine>>
 ) {
     for (recipe_opt, mut state, mut inv) in q.iter_mut() {
-        if state.complete {
+        if *state == MachineState::Complete {
             if let Some(recipe) = &recipe_opt.0 {
                 if inv.0.add_strict(&recipe.outputs) {
-                    state.complete = false;
+                    *state = MachineState::Idle;
                     println!("Spawned results of recipe {}!", recipe.name);
                     println!("Output now contains {}", inv.0.stacks[0]);
+                } else {
+                    *state = MachineState::OutputFull;
+                    println!("Can't spawn recipe outputs, output is full!");
                 }
             }
         }
