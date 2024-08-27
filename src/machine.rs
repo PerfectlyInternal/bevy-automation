@@ -91,14 +91,10 @@ fn spawn_inputs(
     item_types: Res<ItemTypeList>,
 ) {
     for mut inv in q.iter_mut() {
-        let rem = inv.0.add(&[
+        let _ = inv.0.add(&[
             ItemStack { item_type: item_types.0.get(&1).unwrap().clone(), size: 10 }
         ]);
-        if !rem.is_empty() {
-            println!("{} left after adding inputs", rem[0]);
-        } else {
-            println!("Spawned input stack!");
-        }
+        println!("Spawned input stack!");
     }
 }
 

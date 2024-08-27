@@ -1,3 +1,5 @@
+// junk code i think? might be used in a later re-implementation for inventories
+
 pub struct ItemSet {
     items: HashMap<ItemType, u16>,
     slots: u16,
