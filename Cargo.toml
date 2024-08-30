@@ -4,9 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.14.1"
+bevy-inspector-egui = "0.25.2"
 bevy_pancam = "0.13.0"
 serde = "1.0.208"
+
+[dependencies.bevy]
+version = "0.14.1"
+features = ["jpeg"]
 
 [dependencies.bevy_common_assets]
 version = "0.11"

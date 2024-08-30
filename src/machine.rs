@@ -23,9 +23,10 @@ impl Plugin for MachinePlugin {
 #[derive(serde::Deserialize, Asset, TypePath, Clone)]
 pub struct MachineTemplate {
     pub name: String,
+    pub sprite_name: String,
     pub id: u16,
     pub crafting_speed: f32,
-    pub valid_recipes: Vec<u16>
+    pub valid_recipes: Vec<u16>,
 }
 
 #[derive(Resource)]
@@ -68,10 +69,17 @@ pub struct MachineBundle {
 fn spawn_machine(
     mut commands: Commands,
     machine_list: Res<MachineList>,
+    asset_server: Res<AssetServer>,
 ) {
+    let template = machine_list.0.get(&1).unwrap();
+    println!("Spawning machine with sprite {}", template.sprite_name.clone());
     commands.spawn((
-        Machine(machine_list.0.get(&1).unwrap().clone()),
+        Machine(template.clone()),
         MachineBundle::default(),
+        SpriteBundle {
+            texture: asset_server.load(template.sprite_name.clone()),
+            ..default()
+        },
     ));
     println!("Spawned machine!");
 }
@@ -105,7 +113,7 @@ fn start_crafts(
         if let Some(recipe) = &recipe_opt.0 {
             match *state { 
                 MachineState::Complete => println!("Machine already has completed outputs, not starting recipe"),
-                MachineState::Crafting => println!("Machine is already crafting!"),
+                MachineState::Crafting => (), //println!("Machine is already crafting!"),
                 MachineState::InputShortage => println!("Machine has no inputs!"),
                 MachineState::OutputFull => println!("Machine's output is full!"),
                 MachineState::Idle => {
